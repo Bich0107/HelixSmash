@@ -1,11 +1,10 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BrickMaker : MonoBehaviour
 {
-    [Serializable]
+
+    [System.Serializable]
     private class BrickPartGroup
     {
         public List<GameObject> brickParts;
@@ -16,17 +15,18 @@ public class BrickMaker : MonoBehaviour
             return brickParts[index];
         }
     }
-
+    [Header("Prefabs")]
+    [SerializeField] GameObject finishLine;
     [Header("Maker settings")]
     [SerializeField] List<BrickPartGroup> brickPartList;
     [SerializeField] BrickPartGroup currentPartGroup;
     [Header("Brick settings")]
-    [SerializeField] float specialPartRatio;
+    [SerializeField] List<float> specialPartRatioList;
     [SerializeField] Material specialPartMaterial;
 
     public void SetRandomPartGroup()
     {
-        int index = UnityEngine.Random.Range(0, brickPartList.Count);
+        int index = Random.Range(0, brickPartList.Count);
         currentPartGroup = brickPartList[index];
     }
 
@@ -40,6 +40,7 @@ public class BrickMaker : MonoBehaviour
     public List<GameObject> CreateBricks(GameObject part, int amount)
     {
         List<GameObject> bricks = new List<GameObject>();
+        float specialPartRatio = GetRandomSpecialPartRatio();
 
         for (int i = 0; i < amount; i++)
         {
@@ -68,6 +69,12 @@ public class BrickMaker : MonoBehaviour
         return bricks;
     }
 
+    public GameObject GetFinishLine()
+    {
+        GameObject g = Instantiate(finishLine);
+        return g;
+    }
+
     GameObject GetRandomPart()
     {
         if (currentPartGroup == null)
@@ -76,6 +83,12 @@ public class BrickMaker : MonoBehaviour
             return null;
         }
         return currentPartGroup.GetRandomPart();
+    }
+
+    float GetRandomSpecialPartRatio()
+    {
+        int index = Random.Range(0, specialPartRatioList.Count);
+        return specialPartRatioList[index];
     }
 
     int GetPartAmount(string partName)

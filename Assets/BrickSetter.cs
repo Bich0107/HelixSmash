@@ -14,6 +14,7 @@ public class BrickSetter : MonoBehaviour
     [SerializeField] float distance = 1f;
     [SerializeField] int baseAmount = 50;
     [SerializeField] int currentAmount;
+    [SerializeField] int increaseAmount;
     [Header("Rotation settings")]
     [Tooltip("The next brick is rotate by angleDif amount compare to the last brick")]
     [SerializeField] float angleDif = 5f;
@@ -34,10 +35,14 @@ public class BrickSetter : MonoBehaviour
         while (currentAmount > 0)
         {
             // ensure the number of brick doesn't exceed the spawn amount
-            int amount = Mathf.Min(currentAmount, GetRandomAmount()); 
+            int amount = Mathf.Min(currentAmount, GetRandomAmount());
             currentAmount -= amount;
 
             float rotateAngle = GetRandomRotateDirection();
+            float currentAngleDif = rotateAngle > 0 ? -angleDif : angleDif;
+
+            // random number to choose a material style for these bricks
+            int num = Random.Range(0, 100);
 
             List<GameObject> bricks = brickMaker.CreateRandomBrick(amount);
             foreach (GameObject brick in bricks)
@@ -46,23 +51,43 @@ public class BrickSetter : MonoBehaviour
                 currentSpawnPos.y += distance;
 
                 // change brick rotation base on last brick rotation and store that value                
-                Quaternion rotation = lastRotation *  Quaternion.AngleAxis(angleDif, Vector3.up);
+                Quaternion rotation = lastRotation * Quaternion.AngleAxis(currentAngleDif, Vector3.up);
                 brick.transform.rotation = rotation;
                 lastRotation = rotation;
-            
+
                 brick.transform.parent = transform;
-                brick.GetComponent<Brick>().SetRotation(rotateAngle);
+
+                Brick brickScript = brick.GetComponent<Brick>();
+                brickScript.SetRotation(rotateAngle);
+
+                // choose material type base on previous random num
+                if (num < 50) brickScript.SetPartsMaterialType1();
+                else brickScript.SetPartsMaterialType2();
 
                 brick.SetActive(true);
             }
         }
+
+        SpawnFinishLine();
     }
 
-    float GetRandomRotateDirection() {
+    void SpawnFinishLine()
+    {
+        GameObject brick = brickMaker.GetFinishLine();
+        brick.transform.position = currentSpawnPos;
+        currentSpawnPos.y += distance;
+        brick.transform.parent = transform;
+    }
+
+    float GetRandomRotateDirection()
+    {
         int rand = Random.Range(0, 100);
-        if (rand < 50) {
+        if (rand < 50)
+        {
             return rotateSpeed;
-        } else {
+        }
+        else
+        {
             return -rotateSpeed;
         }
     }
@@ -73,7 +98,8 @@ public class BrickSetter : MonoBehaviour
         return spawnAmounts[index];
     }
 
-    public void Reset() {
+    public void Reset()
+    {
         currentAmount = baseAmount;
         currentSpawnPos = baseSpawnPos;
         lastRotation = Quaternion.identity;

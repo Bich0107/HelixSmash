@@ -6,26 +6,52 @@ public class BrickPart : MonoBehaviour
 {
     [SerializeField] Brick brick;
     [SerializeField] MeshRenderer meshRenderer;
-    [SerializeField]
+    bool isSpecialPart;
 
     public void Initialize()
     {
+        brick = GetComponentInParent<Brick>();
         meshRenderer = GetComponentInChildren<MeshRenderer>();
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            PlayerTrigger(other);
+        }
+    }
+
+    void PlayerTrigger(Collider other)
+    {
+        Ball ball = other.GetComponent<Ball>();
+        if (ball == null) return;
+
+        if (ball.IsAttacking)
+        {
+            if (ball.IsInvincible || !isSpecialPart)
+            {
+                ball.IncreaseCounter();
+                brick.Break();
+            }
+            else
+            {
+                Debug.Log("game over");
+                ball.Dead();
+            }
+        }
+        else
+        {
+            ball.BounceUp();
+        }
     }
 
     public void ChangeMaterial(Material material)
     {
-        if (meshRenderer == null)
-        {
-            Debug.Log("meshRender is null", gameObject);
-            return;
-        }
+        if (meshRenderer == null) return;
 
-        if (material == null)
-        {
-            Debug.Log("Material is null", gameObject);
-            return;
-        }
         meshRenderer.material = material;
     }
+
+    public void SetSpecialPart() => isSpecialPart = true;
 }
