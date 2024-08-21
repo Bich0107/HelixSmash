@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BrickPart : MonoBehaviour
 {
@@ -8,9 +9,9 @@ public class BrickPart : MonoBehaviour
     [SerializeField] MeshRenderer meshRenderer;
     bool isSpecialPart;
 
-    public void Initialize()
+    public void Initialize(Brick _brick)
     {
-        brick = GetComponentInParent<Brick>();
+        brick = _brick;
         meshRenderer = GetComponentInChildren<MeshRenderer>();
     }
 
@@ -18,14 +19,16 @@ public class BrickPart : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            PlayerTrigger(other);
+            Triggered(other);
         }
     }
 
-    void PlayerTrigger(Collider other)
+    void Triggered(Collider other)
     {
         Ball ball = other.GetComponent<Ball>();
-        if (ball == null) return;
+        if (ball == null || ball.IsFinish) {
+            return;
+        }
 
         if (ball.IsAttacking)
         {
@@ -38,6 +41,7 @@ public class BrickPart : MonoBehaviour
             {
                 Debug.Log("game over");
                 ball.Dead();
+                SceneManager.LoadScene(0);
             }
         }
         else

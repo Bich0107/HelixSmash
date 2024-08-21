@@ -35,7 +35,7 @@ public class Brick : MonoBehaviour
         foreach (Transform child in transform)
         {
             BrickPart part = child.GetComponent<BrickPart>();
-            part.Initialize();
+            part.Initialize(this);
 
             if (counter % divider == 0)
             {
@@ -56,7 +56,7 @@ public class Brick : MonoBehaviour
         foreach (Transform child in transform)
         {
             BrickPart part = child.GetComponent<BrickPart>();
-            part.Initialize();
+            part.Initialize(this);
 
             if (counter < specialPartAmount)
             {
@@ -72,8 +72,6 @@ public class Brick : MonoBehaviour
 
     public void Break()
     {
-        // brick break
-        Debug.Log("brick break", gameObject);
         gameObject.SetActive(false);
     }
 

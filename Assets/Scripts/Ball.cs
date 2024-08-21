@@ -12,15 +12,18 @@ public class Ball : MonoBehaviour
     [SerializeField] float bounceDistance;
     bool isBouncing;
     [Header("Attack settings")]
-    [SerializeField] float baseSpeed;
     [SerializeField] float dropSpeed;
     [SerializeField] float invincibleTime;
     [Tooltip("Continuously destroy brickAmount brick to be invincible for invincibleTime")]
     [SerializeField] int brickAmount;
-    [SerializeField] bool isAttacking = false;
-    [SerializeField] bool isInvincible = false;
     int brickCounter;
     float invincibleTimer;
+    
+    // flags
+    bool isAttacking = false;
+    bool isInvincible = false;
+    bool isFinish;
+    public bool IsFinish => isFinish;
     public bool IsAttacking => isAttacking;
     public bool IsInvincible => isInvincible;
 
@@ -33,22 +36,54 @@ public class Ball : MonoBehaviour
 
     void Update()
     {
-        if (isDead) return;
+        if (isDead || isFinish) return;
 
+        ProcessMouseClick();
+    }
+
+    void ProcessMouseClick()
+    {
         if (Input.GetMouseButton(0))
         {
-            isAttacking = true;
+            Attack();
         }
         else
         {
+            StopAttack();
+        }
+    }
+
+    void Attack()
+    {
+        if (!isAttacking)
+        {
+            StopAllCoroutines();
+
+            rigid.useGravity = false;
+            isBouncing = false;
+            isAttacking = true;
+            rigid.velocity = dropSpeed * Vector3.down;
+        }
+    }
+
+    void StopAttack()
+    {
+        if (isAttacking)
+        {
+            StopAllCoroutines();
+
+            isBouncing = false;
             isAttacking = false;
+            isInvincible = false;
+            rigid.velocity = Vector3.zero;
+            rigid.useGravity = true;
         }
     }
 
     public void IncreaseCounter()
     {
         brickCounter++;
-        if (brickCounter >= brickAmount)
+        if (brickCounter >= brickAmount && !isInvincible)
         {
             StartCoroutine(CR_Invincible());
         }
@@ -73,7 +108,7 @@ public class Ball : MonoBehaviour
         if (isBouncing) return;
 
         isBouncing = true;
-        ToggleGravity();
+        SetGravity(false);
         bounceHeight = transform.position.y;
         StartCoroutine(CR_BounceUp());
     }
@@ -98,23 +133,38 @@ public class Ball : MonoBehaviour
         transform.position = newPosition;
 
         rigid.velocity = Vector3.zero;
-        ToggleGravity();
+        SetGravity(true);
 
         isBouncing = false;
     }
 
-    public void Dead() {
+    public void Dead()
+    {
         isDead = true;
+        Stop();
+    }
+
+    public void Finish()
+    {
+        isFinish = true;
+        Stop();
+    }
+
+    public void Stop()
+    {
         StopAllCoroutines();
+
+        isBouncing = false;
+        rigid.velocity = Vector3.zero;
         rigid.useGravity = false;
         isAttacking = false;
         isInvincible = false;
     }
 
-    void ToggleGravity()
+    void SetGravity(bool status)
     {
         if (rigid == null) return;
 
-        rigid.useGravity = !rigid.useGravity;
+        rigid.useGravity = status;
     }
 }
