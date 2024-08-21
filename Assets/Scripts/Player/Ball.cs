@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
+    [Header("Generals")]
+    [SerializeField] ExplodeAnimation explodeAnimation;
+    [SerializeField] ParticleSystem fireVFX;
     [Header("Movement settings")]
     [SerializeField] Rigidbody rigid;
     [SerializeField] float bounceHeight;
@@ -13,15 +16,17 @@ public class Ball : MonoBehaviour
     bool isBouncing;
     [Header("Attack settings")]
     [SerializeField] float dropSpeed;
+    [SerializeField] float baseInvincibleTime = 3f;
     [SerializeField] float invincibleTime;
+    [SerializeField] float timeIncreasePerDestroyedBrick = 0.001f;
     [Tooltip("Continuously destroy brickAmount brick to be invincible for invincibleTime")]
     [SerializeField] int brickAmount;
-    int brickCounter;
-    float invincibleTimer;
-    
+    [SerializeField] int brickCounter;
+    [SerializeField] float invincibleTimer;
+    [SerializeField] bool isAttacking = false;
+    [SerializeField] bool isInvincible = false;
+
     // flags
-    bool isAttacking = false;
-    bool isInvincible = false;
     bool isFinish;
     public bool IsFinish => isFinish;
     public bool IsAttacking => isAttacking;
@@ -31,6 +36,7 @@ public class Ball : MonoBehaviour
 
     void Start()
     {
+        explodeAnimation = GetComponent<ExplodeAnimation>();
         rigid = GetComponent<Rigidbody>();
     }
 
@@ -72,12 +78,13 @@ public class Ball : MonoBehaviour
         {
             StopAllCoroutines();
 
-            isBouncing = false;
-            isAttacking = false;
-            isInvincible = false;
-            rigid.velocity = Vector3.zero;
-            rigid.useGravity = true;
+            Stop(true);
         }
+    }
+
+    public void IncreaseInvincibleTime()
+    {
+        invincibleTime += timeIncreasePerDestroyedBrick;
     }
 
     public void IncreaseCounter()
@@ -93,12 +100,18 @@ public class Ball : MonoBehaviour
     {
         isInvincible = true;
         invincibleTimer = 0f;
+        invincibleTime = baseInvincibleTime;
+        brickCounter = 0;
+
+        SetInvincibleEffect(true);
 
         while (invincibleTimer <= invincibleTime)
         {
             invincibleTimer += Time.deltaTime;
             yield return null;
         }
+
+        SetInvincibleEffect(false);
 
         isInvincible = false;
     }
@@ -138,27 +151,37 @@ public class Ball : MonoBehaviour
         isBouncing = false;
     }
 
-    public void Dead()
+    public void Die()
     {
         isDead = true;
         Stop();
+
+        explodeAnimation.Play();
     }
 
     public void Finish()
     {
         isFinish = true;
+
         Stop();
     }
 
-    public void Stop()
+    public void Stop(bool useGravity = false)
     {
         StopAllCoroutines();
 
+        SetInvincibleEffect(false);
+        brickCounter = 0;
         isBouncing = false;
         rigid.velocity = Vector3.zero;
-        rigid.useGravity = false;
         isAttacking = false;
         isInvincible = false;
+        SetGravity(useGravity);
+    }
+
+    void SetInvincibleEffect(bool status) {
+        ParticleSystem.EmissionModule emission = fireVFX.emission;
+        emission.enabled = status;
     }
 
     void SetGravity(bool status)
