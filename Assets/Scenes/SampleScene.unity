@@ -6887,8 +6887,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b063aa1a2b1c924091fa877ac2fb93d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  basePos: {x: 0, y: 0, z: 0}
-  baseScale: {x: 0, y: 0, z: 0}
+  basePos: {x: 0, y: 2, z: -2.36}
+  baseScale: {x: 0.75, y: 0.75, z: 0.75}
   parts:
   - {fileID: 1860692788}
   - {fileID: 1388586018}
@@ -6898,25 +6898,25 @@ MonoBehaviour:
   - {fileID: 1694079403}
   - {fileID: 47006849}
   - {fileID: 1999551250}
-  explodeAnimation: {fileID: 0}
+  explodeAnimation: {fileID: 1548096246}
   displayer: {fileID: 597104527}
   fireVFX: {fileID: 313930693}
   collideSound: {fileID: 8300000, guid: c137a0f39624c954c89597520e5095d4, type: 3}
   breakSound: {fileID: 8300000, guid: 20f83f5708300534c98f5ee7e5f681c7, type: 3}
-  rigid: {fileID: 0}
+  rigid: {fileID: 1548096247}
   minXScale: 0.5
   minYScale: 0.5
   scaleChangeRate: 0.4
-  bounceHeight: 0
+  bounceHeight: 0.7247002
   bounceTime: 0.75
   bounceDistance: 2
   dropSpeed: 17
   baseInvincibleTime: 3
-  invincibleTime: 3
-  invincibleTimer: 0
+  invincibleTime: 3.18
+  invincibleTimer: 2.469589
   timeIncreasePerDestroyedBrick: 0.01
   brickAmount: 10
-  brickCounter: 0
+  brickCounter: 50
   continuousCounter: 0
   isAttacking: 0
   isInvincible: 0
@@ -7270,9 +7270,9 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
-  m_enableVertexGradient: 1
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_enableVertexGradient: 0
   m_colorMode: 0
   m_fontColorGradient:
     topLeft: {r: 1, g: 1, b: 1, a: 1}
@@ -7352,8 +7352,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   text: {fileID: 1635317346}
   maxAlpha: 1
-  minAlpha: 0.2
-  changeTime: 2
+  minAlpha: 0.1
+  changeTime: 1.5
 --- !u!1001 &1694079400
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -23,6 +23,7 @@ public class PlayText : MonoBehaviour
         {
             text.enabled = false;
             StopAllCoroutines();
+            text.color = baseColor;
         }
     }
     
