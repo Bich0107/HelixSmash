@@ -23,7 +23,9 @@ public class BrickMaker : MonoBehaviour
     [SerializeField] List<GameObject> spawnBricks;
     [SerializeField] List<float> specialPartRatioList;
     [SerializeField] Material specialPartMaterial;
+    [SerializeField] AudioClip breakingSound;
 
+    // select a random part group, each have a number of part with different size
     public void SetRandomPartGroup()
     {
         int index = Random.Range(0, brickPartList.Count);
@@ -32,15 +34,16 @@ public class BrickMaker : MonoBehaviour
 
     public List<GameObject> CreateRandomBrick(int amount)
     {
-        GameObject brickPart = GetRandomPart();
+        GameObject brickPart = GetRandomPart(); // select a random part and create amount number of brick(s) from it
 
         return CreateBricks(brickPart, amount);
     }
 
+    // create a amount number of bricks with part
     public List<GameObject> CreateBricks(GameObject part, int amount)
     {
         List<GameObject> bricks = new List<GameObject>();
-        float specialPartRatio = GetRandomSpecialPartRatio();
+        float specialPartRatio = GetRandomSpecialPartRatio(); // choose a random ratio between normal part and special part
 
         for (int i = 0; i < amount; i++)
         {
@@ -59,12 +62,12 @@ public class BrickMaker : MonoBehaviour
 
             // initialize brick
             Brick brickScript = brick.AddComponent<Brick>();
-            brickScript.Initialize(specialPartRatio, specialPartMaterial);
+            brickScript.Initialize(specialPartRatio, specialPartMaterial, breakingSound);
 
             brick.SetActive(false);
 
+            // add created brick to return list and spawn list to control later
             bricks.Add(brick);
-
             spawnBricks.Add(brick);
         }
 
@@ -74,6 +77,7 @@ public class BrickMaker : MonoBehaviour
     public GameObject GetFinishLine()
     {
         GameObject g = Instantiate(finishLine);
+        spawnBricks.Add(g);
         return g;
     }
 
@@ -92,7 +96,8 @@ public class BrickMaker : MonoBehaviour
         int index = Random.Range(0, specialPartRatioList.Count);
         return specialPartRatioList[index];
     }
-
+    
+    // get the amount of part needed to create a brick from part's name
     int GetPartAmount(string partName)
     {
         string[] nameParts = partName.Split('_');
@@ -101,6 +106,7 @@ public class BrickMaker : MonoBehaviour
         return partAmount;
     }
 
+    // each part need to rotate a certain degree to form a brick base on the amount of part needed
     float GetRotateDegree(int partAmount) => 360f / partAmount;
 
     public void Reset()

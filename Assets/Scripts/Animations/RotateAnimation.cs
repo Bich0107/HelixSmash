@@ -28,6 +28,7 @@ public class RotateAnimation : MonoBehaviour
 
     IEnumerator CR_Rotate()
     {
+        // rotate object by a angle on x, y and z axis
         float tick = 0f;
         do
         {

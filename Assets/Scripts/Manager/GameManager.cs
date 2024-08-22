@@ -43,16 +43,21 @@ public class GameManager : MonoBehaviour
     public void ToNextStage()
     {
         player.gameObject.SetActive(true);
-        player.Reset();
+        player.ResetTransform(); // reset ball position
 
-        brickSetter.ToNextStage();
+        brickSetter.ToNextStage(); // set bricks for new stage
+        FindObjectOfType<RageBar>().Reset();
     }
 
     public void Replay() {
-        // replay
         player.Reset();
+
+        // show play canvas
         playCanvas.enabled = true;
         gameOverCanvas.enabled = false;
+        FindObjectOfType<RageBar>().Reset();
+
+        // reset stage
         brickSetter.Reset();
         brickSetter.SpawnBricks();
     }
@@ -65,8 +70,12 @@ public class GameManager : MonoBehaviour
     IEnumerator CR_GameOver()
     {
         yield return new WaitForSeconds(gameOverDelay);
+        
+        // show gameover canvas
         playCanvas.enabled = false;
+        FindObjectOfType<RageBar>().Reset();
         gameOverCanvas.enabled = true;
-        displayer.Display();
+
+        displayer.Display(); // display score
     }
 }

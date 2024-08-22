@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class BrickPart : MonoBehaviour, IExplodable
 {
@@ -11,7 +7,7 @@ public class BrickPart : MonoBehaviour, IExplodable
     [SerializeField] Rigidbody rigid;
     [SerializeField] MeshRenderer meshRenderer;
     bool isSpecialPart;
-    bool attackTriggered;
+    bool triggered;
 
     public void Initialize(Brick _brick)
     {
@@ -21,11 +17,12 @@ public class BrickPart : MonoBehaviour, IExplodable
         rigid = GetComponent<Rigidbody>();
         bodyCollider = GetComponentInChildren<Collider>();
 
+        // disable physics
         rigid.isKinematic = true;
         rigid.useGravity = false;
     }
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Player"))
         {
@@ -36,23 +33,24 @@ public class BrickPart : MonoBehaviour, IExplodable
     void Triggered(Collider other)
     {
         Ball ball = other.GetComponent<Ball>();
-        if (ball == null || ball.IsFinish || attackTriggered)
+        if (ball == null || ball.IsFinish || triggered || ball.IsDead)
         {
             return;
         }
 
         if (ball.IsAttacking)
         {
-            attackTriggered = true;
+            triggered = true; // turn on flag
             if (isSpecialPart)
             {
+                 // if player is invincible, increase invincible time and tell the brick to break and disappear
                 if (ball.IsInvincible)
                 {
                     ball.IncreaseInvincibleTime();
                     brick.Break(ball);
                     Disappear();
                 }
-                else
+                else // if not, kill player
                 {
                     ball.Die();
                     GameManager.Instance.GameOver();
@@ -77,10 +75,11 @@ public class BrickPart : MonoBehaviour, IExplodable
 
     public void Explode(Vector3 force)
     {
+        // turn on physics and collider
         bodyCollider.isTrigger = false;
-
         rigid.isKinematic = false;
         rigid.useGravity = true;
+        
         rigid.AddForce(force, ForceMode.Impulse);
     }
 

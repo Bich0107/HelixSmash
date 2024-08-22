@@ -7,12 +7,19 @@ public class Ball : MonoBehaviour
 {
     [Header("Generals")]
     [SerializeField] Vector3 basePos;
+    [SerializeField] Vector3 baseScale;
     [SerializeField] List<SpherePart> parts;
     [SerializeField] ExplodeAnimation explodeAnimation;
-    [SerializeField] CounterDisplayer displayer;
+    [SerializeField] CounterDisplayer displayer; // display number of brick destroyed
     [SerializeField] ParticleSystem fireVFX;
+    [SerializeField] AudioClip collideSound;
+    [SerializeField] AudioClip breakSound;
     [Header("Movement settings")]
     [SerializeField] Rigidbody rigid;
+    [SerializeField] float minXScale;
+    [SerializeField] float minYScale;
+    [SerializeField] float scaleChangeRate;
+    [Space]
     [SerializeField] float bounceHeight;
     [SerializeField] float bounceTime;
     [SerializeField] float bounceDistance;
@@ -21,27 +28,34 @@ public class Ball : MonoBehaviour
     [SerializeField] float dropSpeed;
     [SerializeField] float baseInvincibleTime = 3f;
     [SerializeField] float invincibleTime;
+    [SerializeField] float invincibleTimer;
     [SerializeField] float timeIncreasePerDestroyedBrick = 0.001f;
+    public float InvincibleTime => invincibleTime;
+    public float InvincibleTimer => invincibleTimer;
+    [Space]
     [Tooltip("Continuously destroy brickAmount brick to be invincible for invincibleTime")]
     [SerializeField] int brickAmount;
     [SerializeField] int brickCounter;
-    public int BrickCounter => brickCounter;
     [SerializeField] int continuousCounter;
-    [SerializeField] float invincibleTimer;
     [SerializeField] bool isAttacking = false;
     [SerializeField] bool isInvincible = false;
 
+    public int BrickAmount => brickAmount;
+    public int BrickCounter => brickCounter;
+    public int ContinuousCounter => continuousCounter;
+
     // flags
     bool isFinish;
+    bool isDead = false;
     public bool IsFinish => isFinish;
     public bool IsAttacking => isAttacking;
     public bool IsInvincible => isInvincible;
-
-    bool isDead = false;
+    public bool IsDead => isDead;
 
     void Awake()
     {
         basePos = transform.position;
+        baseScale = transform.localScale;
     }
 
     void Start()
@@ -50,6 +64,7 @@ public class Ball : MonoBehaviour
         rigid = GetComponent<Rigidbody>();
         displayer = FindObjectOfType<CounterDisplayer>();
 
+        // reset display value
         displayer.Display(0);
     }
 
@@ -58,6 +73,27 @@ public class Ball : MonoBehaviour
         if (isDead || isFinish) return;
 
         ProcessMouseClick();
+        ScaleAnimation();
+    }
+
+    // scale game object base on move direction
+    void ScaleAnimation()
+    {
+        float x = transform.localScale.x;
+        float y = transform.localScale.y;
+
+        if (isBouncing)
+        {  // when moving up, reduce increase y scale while increase x scale
+            x = Mathf.Max(minXScale, x - Time.deltaTime * scaleChangeRate);
+            y = Mathf.Min(baseScale.y, y + Time.deltaTime * scaleChangeRate);
+            transform.localScale = new Vector3(x, y, transform.localScale.z);
+        }
+        else
+        {   // when moving up, reduce increase x scale while increase y scale
+            x = Mathf.Min(baseScale.y, x + Time.deltaTime * scaleChangeRate);
+            y = Mathf.Max(minYScale, y - Time.deltaTime * scaleChangeRate);
+            transform.localScale = new Vector3(x, y, transform.localScale.z);
+        }
     }
 
     void ProcessMouseClick()
@@ -81,6 +117,7 @@ public class Ball : MonoBehaviour
             rigid.useGravity = false;
             isBouncing = false;
             isAttacking = true;
+
             rigid.velocity = dropSpeed * Vector3.down;
         }
     }
@@ -95,6 +132,7 @@ public class Ball : MonoBehaviour
         }
     }
 
+    // call when ball destroy a brick at its special part
     public void IncreaseInvincibleTime()
     {
         invincibleTime += timeIncreasePerDestroyedBrick;
@@ -102,9 +140,12 @@ public class Ball : MonoBehaviour
 
     public void IncreaseCounter()
     {
-        brickCounter++;
+        brickCounter++; // total destroy counter
+        continuousCounter++; // continously destroy counter
+        
         displayer.Display(brickCounter);
-        continuousCounter++;
+
+        // if continouse counter reach the brickAmount and is not invincible, turn invincible
         if (continuousCounter >= brickAmount && !isInvincible)
         {
             StartCoroutine(CR_Invincible());
@@ -120,6 +161,7 @@ public class Ball : MonoBehaviour
 
         SetInvincibleEffect(true);
 
+        // count down invincible time
         while (invincibleTimer <= invincibleTime)
         {
             invincibleTimer += Time.deltaTime;
@@ -135,19 +177,21 @@ public class Ball : MonoBehaviour
     {
         if (isBouncing) return;
 
+        AudioManager.Instance.PlaySound(collideSound);
         isBouncing = true;
         SetGravity(false);
-        bounceHeight = transform.position.y;
+        bounceHeight = transform.position.y; // set the base height for this bounce
         StartCoroutine(CR_BounceUp());
     }
 
     IEnumerator CR_BounceUp()
     {
-        float targetHeight = bounceHeight + bounceDistance;
+        float targetHeight = bounceHeight + bounceDistance; // calculate the max height base on start height
 
         float tick = 0f;
         float startHeight = transform.position.y;
         Vector3 newPosition = transform.position;
+
         while (!Mathf.Approximately(transform.position.y, targetHeight))
         {
             tick += Time.deltaTime;
@@ -157,9 +201,11 @@ public class Ball : MonoBehaviour
             yield return null;
         }
 
+        // ensure ball is at the right height
         newPosition.y = targetHeight;
         transform.position = newPosition;
 
+        // reset velocity and turn on gravity
         rigid.velocity = Vector3.zero;
         SetGravity(true);
 
@@ -171,16 +217,19 @@ public class Ball : MonoBehaviour
         isDead = true;
         Stop();
 
+        AudioManager.Instance.PlaySound(breakSound);
         explodeAnimation.Play();
     }
 
+    // call when collide with finish line
     public void Finish()
     {
         isFinish = true;
-
+        transform.localScale = baseScale;
         Stop();
     }
 
+    // stop all physics action and set gravity status
     public void Stop(bool useGravity = false)
     {
         StopAllCoroutines();
@@ -194,21 +243,26 @@ public class Ball : MonoBehaviour
         SetGravity(useGravity);
     }
 
-    public void Reset()
+    public void ResetTransform()
     {
         transform.position = basePos;
-        isFinish = false;
-        isDead = false;
-
-        brickCounter = 0;
-
+        transform.localScale = baseScale;
         foreach (SpherePart part in parts)
         {
             part.Reset();
         }
 
-        displayer.Reset();
+        rigid.useGravity = true;
+        isFinish = false;
+    }
 
+    public void Reset()
+    {
+        isDead = false;
+
+        ResetTransform();
+        brickCounter = 0;
+        displayer.Reset();
         Stop(true);
     }
 

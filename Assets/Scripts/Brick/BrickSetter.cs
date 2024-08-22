@@ -31,8 +31,10 @@ public class BrickSetter : MonoBehaviour
 
     public void SpawnBricks()
     {
+        // choose and random part group
         brickMaker.SetRandomPartGroup();
 
+        // start setting bricks
         spawnCounter = currentAmount;
         while (spawnCounter > 0)
         {
@@ -40,6 +42,7 @@ public class BrickSetter : MonoBehaviour
             int amount = Mathf.Min(spawnCounter, GetRandomAmount());
             spawnCounter -= amount;
 
+            // rotate the brick by a rotateAngle clockwise or counter clockwise
             float rotateAngle = GetRandomRotateDirection();
             float currentAngleDif = rotateAngle > 0 ? -angleDif : angleDif;
 
@@ -49,6 +52,7 @@ public class BrickSetter : MonoBehaviour
             List<GameObject> bricks = brickMaker.CreateRandomBrick(amount);
             foreach (GameObject brick in bricks)
             {
+                // update brick position and spawn pos
                 brick.transform.position = currentSpawnPos;
                 currentSpawnPos.y += distance;
 
@@ -59,6 +63,7 @@ public class BrickSetter : MonoBehaviour
 
                 brick.transform.parent = transform;
 
+                // start brick rotation
                 Brick brickScript = brick.GetComponent<Brick>();
                 brickScript.SetRotation(rotateAngle);
 
@@ -83,7 +88,7 @@ public class BrickSetter : MonoBehaviour
 
     float GetRandomRotateDirection()
     {
-        int rand = Random.Range(0, 100);
+        int rand = Random.Range(0, 100); // 50% to rotate clockwise or counter clockwise
         if (rand < 50)
         {
             return rotateSpeed;

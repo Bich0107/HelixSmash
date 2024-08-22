@@ -13,6 +13,7 @@ public class ExplodeAnimation : MonoBehaviour
     {
         center = transform.position;
 
+        // make every part of this game object explode base on direction between the part and the game object 
         foreach (GameObject part in parts)
         {
             Vector3 direction = GetExplodeDirection(part.transform);

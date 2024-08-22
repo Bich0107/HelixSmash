@@ -19,17 +19,21 @@ public class FinishLine : MonoBehaviour
             Ball ball = other.GetComponent<Ball>();
             ball.Finish();
 
+            // fix ball position
             Vector3 pos = ball.transform.position;
             pos.y = transform.position.y + YDistanceToPlayer;
             ball.transform.position = pos;
 
-            StartCoroutine(CR_LoadNewState());
+            StartCoroutine(CR_LoadNewStage());
         }
     }
 
-    IEnumerator CR_LoadNewState()
+    IEnumerator CR_LoadNewStage()
     {
         yield return new WaitForSeconds(delay);
+
+        FindObjectOfType<BackgroundSetter>().ChangeBGColor();
+
         GameManager.Instance.ToNextStage();
         playText.Show();
         Destroy(gameObject);
