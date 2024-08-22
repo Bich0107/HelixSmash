@@ -5,12 +5,13 @@ using UnityEngine;
 [RequireComponent(typeof(RotateAnimation))]
 public class Brick : MonoBehaviour
 {
-    static float s_explodeForce = 5f;
+    static float s_explodeForce = 15f;
     static float s_deactiveDelay = 1.5f;
 
     [SerializeField] List<BrickPart> parts = new List<BrickPart>();
     RotateAnimation rotater;
     int specialPartAmount;
+    bool breaked;
 
     public void Initialize(float partRatio, Material partMaterial)
     {
@@ -73,12 +74,21 @@ public class Brick : MonoBehaviour
         }
     }
 
-    public void Break()
+    public void Break(Ball ball)
     {
+        if (breaked) return;
+        breaked = true;
+
+        rotater.Stop();
+
+        ball.IncreaseCounter();
+
         foreach (BrickPart part in parts) {
+            if (part.gameObject == null) continue;
+
             IExplodable target = part.GetComponent<IExplodable>();
             if (target != null) {
-                target.Explode(s_explodeForce * transform.forward);
+                target.Explode(s_explodeForce * part.transform.forward);
             }
         }
 
@@ -87,7 +97,7 @@ public class Brick : MonoBehaviour
 
     IEnumerator CR_Deactive() {
         yield return new WaitForSeconds(s_deactiveDelay);
-        gameObject.SetActive(false);
+        Destroy(gameObject);
     }
 
     public float SpecialPartRatio { get; set; }

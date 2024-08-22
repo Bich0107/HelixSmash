@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class BrickMaker : MonoBehaviour
 {
-
     [System.Serializable]
     private class BrickPartGroup
     {
@@ -21,6 +20,7 @@ public class BrickMaker : MonoBehaviour
     [SerializeField] List<BrickPartGroup> brickPartList;
     [SerializeField] BrickPartGroup currentPartGroup;
     [Header("Brick settings")]
+    [SerializeField] List<GameObject> spawnBricks;
     [SerializeField] List<float> specialPartRatioList;
     [SerializeField] Material specialPartMaterial;
 
@@ -64,6 +64,8 @@ public class BrickMaker : MonoBehaviour
             brick.SetActive(false);
 
             bricks.Add(brick);
+
+            spawnBricks.Add(brick);
         }
 
         return bricks;
@@ -100,4 +102,15 @@ public class BrickMaker : MonoBehaviour
     }
 
     float GetRotateDegree(int partAmount) => 360f / partAmount;
+
+    public void Reset()
+    {
+        foreach (GameObject brick in spawnBricks)
+        {
+            if (brick != null)
+            {
+                Destroy(brick);
+            }
+        }
+    }
 }

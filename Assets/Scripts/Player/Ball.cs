@@ -6,7 +6,10 @@ using UnityEngine;
 public class Ball : MonoBehaviour
 {
     [Header("Generals")]
+    [SerializeField] Vector3 basePos;
+    [SerializeField] List<SpherePart> parts;
     [SerializeField] ExplodeAnimation explodeAnimation;
+    [SerializeField] CounterDisplayer displayer;
     [SerializeField] ParticleSystem fireVFX;
     [Header("Movement settings")]
     [SerializeField] Rigidbody rigid;
@@ -22,6 +25,8 @@ public class Ball : MonoBehaviour
     [Tooltip("Continuously destroy brickAmount brick to be invincible for invincibleTime")]
     [SerializeField] int brickAmount;
     [SerializeField] int brickCounter;
+    public int BrickCounter => brickCounter;
+    [SerializeField] int continuousCounter;
     [SerializeField] float invincibleTimer;
     [SerializeField] bool isAttacking = false;
     [SerializeField] bool isInvincible = false;
@@ -34,10 +39,18 @@ public class Ball : MonoBehaviour
 
     bool isDead = false;
 
+    void Awake()
+    {
+        basePos = transform.position;
+    }
+
     void Start()
     {
         explodeAnimation = GetComponent<ExplodeAnimation>();
         rigid = GetComponent<Rigidbody>();
+        displayer = FindObjectOfType<CounterDisplayer>();
+
+        displayer.Display(0);
     }
 
     void Update()
@@ -90,7 +103,9 @@ public class Ball : MonoBehaviour
     public void IncreaseCounter()
     {
         brickCounter++;
-        if (brickCounter >= brickAmount && !isInvincible)
+        displayer.Display(brickCounter);
+        continuousCounter++;
+        if (continuousCounter >= brickAmount && !isInvincible)
         {
             StartCoroutine(CR_Invincible());
         }
@@ -101,7 +116,7 @@ public class Ball : MonoBehaviour
         isInvincible = true;
         invincibleTimer = 0f;
         invincibleTime = baseInvincibleTime;
-        brickCounter = 0;
+        continuousCounter = 0;
 
         SetInvincibleEffect(true);
 
@@ -171,7 +186,7 @@ public class Ball : MonoBehaviour
         StopAllCoroutines();
 
         SetInvincibleEffect(false);
-        brickCounter = 0;
+        continuousCounter = 0;
         isBouncing = false;
         rigid.velocity = Vector3.zero;
         isAttacking = false;
@@ -179,7 +194,26 @@ public class Ball : MonoBehaviour
         SetGravity(useGravity);
     }
 
-    void SetInvincibleEffect(bool status) {
+    public void Reset()
+    {
+        transform.position = basePos;
+        isFinish = false;
+        isDead = false;
+
+        brickCounter = 0;
+
+        foreach (SpherePart part in parts)
+        {
+            part.Reset();
+        }
+
+        displayer.Reset();
+
+        Stop(true);
+    }
+
+    void SetInvincibleEffect(bool status)
+    {
         ParticleSystem.EmissionModule emission = fireVFX.emission;
         emission.enabled = status;
     }

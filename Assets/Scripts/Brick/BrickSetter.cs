@@ -14,6 +14,7 @@ public class BrickSetter : MonoBehaviour
     [SerializeField] float distance = 1f;
     [SerializeField] int baseAmount = 50;
     [SerializeField] int currentAmount;
+    [SerializeField] int spawnCounter;
     [SerializeField] int increaseAmount;
     [Header("Rotation settings")]
     [Tooltip("The next brick is rotate by angleDif amount compare to the last brick")]
@@ -23,8 +24,6 @@ public class BrickSetter : MonoBehaviour
 
     void Start()
     {
-        brickMaker.SetRandomPartGroup();
-
         currentAmount = baseAmount;
         currentSpawnPos = baseSpawnPos;
         SpawnBricks();
@@ -32,11 +31,14 @@ public class BrickSetter : MonoBehaviour
 
     public void SpawnBricks()
     {
-        while (currentAmount > 0)
+        brickMaker.SetRandomPartGroup();
+
+        spawnCounter = currentAmount;
+        while (spawnCounter > 0)
         {
             // ensure the number of brick doesn't exceed the spawn amount
-            int amount = Mathf.Min(currentAmount, GetRandomAmount());
-            currentAmount -= amount;
+            int amount = Mathf.Min(spawnCounter, GetRandomAmount());
+            spawnCounter -= amount;
 
             float rotateAngle = GetRandomRotateDirection();
             float currentAngleDif = rotateAngle > 0 ? -angleDif : angleDif;
@@ -98,10 +100,23 @@ public class BrickSetter : MonoBehaviour
         return spawnAmounts[index];
     }
 
-    public void Reset()
+    public void ToNextStage()
     {
-        currentAmount = baseAmount;
+        ResetTransformSettings();
+        currentAmount += increaseAmount;
+        SpawnBricks();
+    }
+
+    void ResetTransformSettings()
+    {
         currentSpawnPos = baseSpawnPos;
         lastRotation = Quaternion.identity;
+    }
+
+    public void Reset()
+    {
+        brickMaker.Reset();
+        currentAmount = baseAmount;
+        ResetTransformSettings();
     }
 }

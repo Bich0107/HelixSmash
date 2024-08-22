@@ -49,25 +49,30 @@ public class BrickPart : MonoBehaviour, IExplodable
                 if (ball.IsInvincible)
                 {
                     ball.IncreaseInvincibleTime();
-                    brick.Break();
-                    gameObject.SetActive(false);
+                    brick.Break(ball);
+                    Disappear();
                 }
                 else
                 {
                     ball.Die();
+                    GameManager.Instance.GameOver();
                 }
             }
             else
             {
-                ball.IncreaseCounter();
-                brick.Break();
-                gameObject.SetActive(false);
+                brick.Break(ball);
+                Disappear();
             }
         }
         else
         {
             ball.BounceUp();
         }
+    }
+
+    void Disappear()
+    {
+        meshRenderer.enabled = false;
     }
 
     public void Explode(Vector3 force)
